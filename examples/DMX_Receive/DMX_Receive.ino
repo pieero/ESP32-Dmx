@@ -13,14 +13,16 @@
 
 DMXESPSerial dmx;
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
-  dmx.init();               // initialization
-  delay(200);               // wait a while (not necessary)
+  dmx.init(&Serial2, 10, 0); // initialization
+  delay(200);                // wait a while (not necessary)
 }
 
-void loop() {
-  dmx.update();             // update the DMX bus
-  int data = dmx.read(1);   // data from channel 1
-  Serial.println(data);     // print it out
+void loop()
+{
+  dmx.update();           // update the DMX bus
+  int data = dmx.read(1); // data from channel 1
+  Serial.println(data);   // print it out
 }

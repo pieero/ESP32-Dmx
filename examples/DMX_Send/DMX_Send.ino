@@ -15,27 +15,27 @@
 
 DMXESPSerial dmx;
 
-void setup() {
-  dmx.init();               // initialization for first 32 addresses by default
-  //dmx.init(512)           // initialization for complete bus
-  delay(200);               // wait a while (not necessary)
+void setup()
+{
+  dmx.init(&Serial2, 10, 0); // initialization for first 32 addresses by default
+  delay(200);                // wait a while (not necessary)
 }
 
-void loop() {
+void loop()
+{
 
-    dmx.write(3, 0);        // channal 3 off
-    dmx.write(1, 255);      // channal 1 on
-    dmx.update();           // update the DMX bus
-    delay(1000);            // wait for 1s
+  dmx.write(3, 0);   // channal 3 off
+  dmx.write(1, 255); // channal 1 on
+  dmx.update();      // update the DMX bus
+  delay(1000);       // wait for 1s
 
-    dmx.write(1, 0);
-    dmx.write(2, 255);
-    dmx.update();
-    delay(1000);
+  dmx.write(1, 0);
+  dmx.write(2, 255);
+  dmx.update();
+  delay(1000);
 
-    dmx.write(2, 0);
-    dmx.write(3, 255);
-    dmx.update();
-    delay(1000);
-
+  dmx.write(2, 0);
+  dmx.write(3, 255);
+  dmx.update();
+  delay(1000);
 }

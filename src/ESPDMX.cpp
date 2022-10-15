@@ -12,95 +12,111 @@
 
 /* ----- LIBRARIES ----- */
 #include <Arduino.h>
+#include <mutex>
 
 #include "ESPDMX.h"
 
+#define DMXSPEED 250000
+#define DMXFORMAT SERIAL_8N2
+#define BREAKSPEED 83333
+#define BREAKFORMAT SERIAL_8N1
 
-
-#define dmxMaxChannel  512
-#define defaultMax 32
-
-#define DMXSPEED       250000
-#define DMXFORMAT      SERIAL_8N2
-#define BREAKSPEED     83333
-#define BREAKFORMAT    SERIAL_8N1
-
-bool dmxStarted = false;
-int sendPin = 2;		//dafault on ESP8266
-
-//DMX value array and size. Entry 0 will hold startbyte
-uint8_t dmxData[dmxMaxChannel] = {};
-int chanSize;
-
-
-void DMXESPSerial::init() {
-  chanSize = defaultMax;
-
-  Serial1.begin(DMXSPEED);
-  pinMode(sendPin, OUTPUT);
-  dmxStarted = true;
-}
-
-// Set up the DMX-Protocol
-void DMXESPSerial::init(int chanQuant) {
-
-  if (chanQuant > dmxMaxChannel || chanQuant <= 0) {
-    chanQuant = defaultMax;
+void DMXESPSerial::init(HardwareSerial *serial, int chanQuant, uint8_t sendPin)
+{
+  this->_serial = serial;
+  if (chanQuant > 512 || chanQuant <= 0)
+  {
+    chanQuant = 512;
   }
 
-  chanSize = chanQuant;
-
-  Serial1.begin(DMXSPEED);
-  pinMode(sendPin, OUTPUT);
-  dmxStarted = true;
+  this->_numberOfChannels = chanQuant;
+  this->_serial->begin(DMXSPEED);
+  this->_sendPin = sendPin;
+  if (sendPin != 0)
+  {
+    pinMode(this->_sendPin, OUTPUT);
+  }
+  this->_dmxStarted = true;
 }
 
-// Function to read DMX data
-uint8_t DMXESPSerial::read(int Channel) {
-  if (dmxStarted == false) init();
+uint8_t DMXESPSerial::read(int channel)
+{
+  if (!this->_dmxStarted)
+    return 0;
 
-  if (Channel < 1) Channel = 1;
-  if (Channel > dmxMaxChannel) Channel = dmxMaxChannel;
-  return(dmxData[Channel]);
+  if (channel < 1)
+  {
+    channel = 1;
+  }
+  else if (channel > 512)
+  {
+    channel = 512;
+  }
+  std::lock_guard<std::mutex> lck(this->_dataMutex);
+  return this->_dmxData[channel];
 }
 
-// Function to send DMX data
-void DMXESPSerial::write(int Channel, uint8_t value) {
-  if (dmxStarted == false) init();
+bool DMXESPSerial::write(int channel, uint8_t value)
+{
+  if (!this->_dmxStarted)
+  {
+    return false;
+  }
+  else if (channel < 1 || channel > this->_numberOfChannels)
+  {
+    return false;
+  }
+  else if (value < 0 || value > 255)
+  {
+    return false;
+  }
 
-  if (Channel < 1) Channel = 1;
-  if (Channel > chanSize) Channel = chanSize;
-  if (value < 0) value = 0;
-  if (value > 255) value = 255;
-
-  dmxData[Channel] = value;
+  std::lock_guard<std::mutex> lck(this->_dataMutex);
+  this->_dmxData[channel] = value;
+  return true;
 }
 
-void DMXESPSerial::end() {
-  delete dmxData;
-  chanSize = 0;
-  Serial1.end();
-  dmxStarted == false;
+void DMXESPSerial::end()
+{
+  std::lock_guard<std::mutex> lck(this->_dataMutex);
+  // Reset data to 0
+  for (int i = 0; i < this->_numberOfChannels; i++)
+  {
+    this->_dmxData[i] = 0;
+  }
+
+  this->_numberOfChannels = 0;
+  this->_serial->end();
+  this->_dmxStarted == false;
 }
 
-void DMXESPSerial::update() {
-  if (dmxStarted == false) init();
+void DMXESPSerial::update()
+{
+  if (!this->_dmxStarted)
+    return;
 
-  //Send break
-  digitalWrite(sendPin, HIGH);
-  Serial1.begin(BREAKSPEED, BREAKFORMAT);
-  Serial1.write(0);
-  Serial1.flush();
+  // Send break
+  if (this->_sendPin != 0)
+  {
+    digitalWrite(this->_sendPin, HIGH);
+  }
+  this->_serial->begin(BREAKSPEED, BREAKFORMAT);
+  this->_serial->write(0);
+  this->_serial->flush();
   delay(1);
-  Serial1.end();
+  this->_serial->end();
 
-  //send data
-  Serial1.begin(DMXSPEED, DMXFORMAT);
-  digitalWrite(sendPin, LOW);
-  Serial1.write(dmxData, chanSize);
-  Serial1.flush();
+  // Lock data while sending
+  std::lock_guard<std::mutex> lck(this->_dataMutex);
+
+  // send data
+  this->_serial->begin(DMXSPEED, DMXFORMAT);
+  if (this->_sendPin != 0)
+  {
+    digitalWrite(this->_sendPin, LOW);
+  }
+  this->_serial->write(this->_dmxData, this->_numberOfChannels);
+  this->_serial->flush();
   delay(1);
-  Serial1.end();
+  this->_serial->end();
 }
-
-// Function to update the DMX bus
