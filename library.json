@@ -8,5 +8,6 @@
         "url": "https://github.com/tpanajott/ESP32-Dmx"
     },
     "frameworks": "arduino",
-    "platforms": "espressif32"
+    "platforms": "espressif32",
+    "license": "GPL-3.0-or-later"
 }
