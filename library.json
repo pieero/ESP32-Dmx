@@ -1,12 +1,12 @@
 {
-    "name": "ESPDMX",
+    "name": "ESP32-DMX",
+    "version": "1.0",
     "keywords": "DMX, controller, remote",
-    "description": "Control DMX lights with an ESP8266",
-    "repository":
-    {
+    "description": "Control DMX lights with an ESP32. Thread safe.",
+    "repository": {
         "type": "git",
-        "url": "https://github.com/Rickgg/ESP-Dmx"
+        "url": "https://github.com/tpanajott/ESP32-Dmx"
     },
     "frameworks": "arduino",
-    "platforms": "espressif"
+    "platforms": "espressif32"
 }
