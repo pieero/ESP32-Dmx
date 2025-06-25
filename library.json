@@ -1,5 +1,5 @@
 {
-    "name": "ESP32-DMX",
+    "name": "ESP32-DMX-nothread",
     "version": "1.0",
     "keywords": "DMX, controller, remote",
     "description": "Control DMX lights with an ESP32. Thread safe or not (it depends)",
