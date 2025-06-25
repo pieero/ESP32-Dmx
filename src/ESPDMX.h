@@ -12,6 +12,9 @@
 
 #include <Arduino.h>
 #include <inttypes.h>
+#if _GLIBCXX_HAS_GTHREADS
+#include <mutex>
+#endif
 
 #ifndef ESPDMX_h
 #define ESPDMX_h
@@ -53,7 +56,9 @@ private:
   /// @brief Indicate wether or not the DMX library has been initialized.
   bool _dmxStarted = false;
   /// @brief Mutex to make sure only one instance has access to _dmxData buffer at the same time.
+  #if _GLIBCXX_HAS_GTHREADS
   std::mutex _dataMutex;
+  #endif
 };
 
 #endif

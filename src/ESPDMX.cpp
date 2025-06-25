@@ -12,7 +12,9 @@
 
 /* ----- LIBRARIES ----- */
 #include <Arduino.h>
+#if _GLIBCXX_HAS_GTHREADS
 #include <mutex>
+#endif
 
 #include "ESPDMX.h"
 
@@ -52,7 +54,9 @@ uint8_t DMXESPSerial::read(int channel)
   {
     channel = 512;
   }
+  #if _GLIBCXX_HAS_GTHREADS
   std::lock_guard<std::mutex> lck(this->_dataMutex);
+  #endif
   return this->_dmxData[channel];
 }
 
@@ -70,15 +74,18 @@ bool DMXESPSerial::write(int channel, uint8_t value)
   {
     return false;
   }
-
+#if _GLIBCXX_HAS_GTHREADS
   std::lock_guard<std::mutex> lck(this->_dataMutex);
+  #endif
   this->_dmxData[channel] = value;
   return true;
 }
 
 void DMXESPSerial::end()
 {
+  #if _GLIBCXX_HAS_GTHREADS
   std::lock_guard<std::mutex> lck(this->_dataMutex);
+  #endif
   // Reset data to 0
   for (int i = 0; i < this->_numberOfChannels; i++)
   {
@@ -87,7 +94,7 @@ void DMXESPSerial::end()
 
   this->_numberOfChannels = 0;
   this->_serial->end();
-  this->_dmxStarted == false;
+  this->_dmxStarted = false;
 }
 
 void DMXESPSerial::update()
@@ -107,8 +114,9 @@ void DMXESPSerial::update()
   this->_serial->end();
 
   // Lock data while sending
+  #if _GLIBCXX_HAS_GTHREADS
   std::lock_guard<std::mutex> lck(this->_dataMutex);
-
+#endif
   // send data
   this->_serial->begin(DMXSPEED, DMXFORMAT);
   if (this->_sendPin != 0)
