@@ -2,6 +2,11 @@
 
 The DMX library allows sending data from Serial1 in DMX format.
 
+This version can run on system without _GLIBCXX_HAS_GTHREADS
+Available in https://github.com/pieero/ESP32-Dmx
+
+This is a fork of https://github.com/tpanajott/ESP32-Dmx
+
 For more information about this library please visit us at https://github.com/Rickgg/ESP-Dmx
 
 
