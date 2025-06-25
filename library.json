@@ -2,10 +2,10 @@
     "name": "ESP32-DMX",
     "version": "1.0",
     "keywords": "DMX, controller, remote",
-    "description": "Control DMX lights with an ESP32. Thread safe.",
+    "description": "Control DMX lights with an ESP32. Thread safe or not (it depends)",
     "repository": {
         "type": "git",
-        "url": "https://github.com/tpanajott/ESP32-Dmx"
+        "url": "https://github.com/pieero/ESP32-Dmx"
     },
     "frameworks": "arduino",
     "platforms": "espressif32",
